@@ -1,65 +1,75 @@
 
+# main.py
+# Cloud Cho - Book Segmentation
 #
-# May 6, 2018 ~ 
-# source:
+# May 6, 2018 ~
+#
+# Step
+# (1) Book segmentation
+# (2) Title collection
+#
+# Source:
+#   1st Trial
 #   https://github.com/FraPochetti/ImageTextRecognition
+#   2nd Trial
 #
-# work? - no
+# Work? - no
 
 from data import OcrData
 from cifar import Cifar
 from userimageski import UserData
 
-
+# ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+# 1st Trial
 def detection_model():
     ################################################################
     # 1- GENERATE MODEL TO PREDICT WHETHER AN OBJECT CONTAINS TEXT OR NOT
     ################################################################
-    
-    # CREATES AN INSTANCE OF THE CLASS LOADING THE OCR DATA 
+
+    # CREATES AN INSTANCE OF THE CLASS LOADING THE OCR DATA
     data = OcrData('/home/francesco/Dropbox/DSR/OCR/ocr-config.py')
-    
+
     # GENERATES A UNIQUE DATA SET MERGING NON-TEXT WITH TEXT IMAGES
     data.merge_with_cifar()
-    
+
     # PERFORMS GRID SEARCH CROSS VALIDATION GETTING BEST MODEL OUT OF PASSED PARAMETERS
     data.perform_grid_search_cv('linearsvc-hog')
-    
+
     # TAKES THE PARAMETERS LINKED TO BEST MODEL AND RE-TRAINS THE MODEL ON THE WHOLE TRAIN SET
     data.generate_best_hog_model()
-    
+
     # TAKES THE JUST GENERATED MODEL AND EVALUATES IT ON TRAIN SET
     data.evaluate('/media/francesco/Francesco/CharacterProject/linearsvc-hog-fulltrain2-90.pickle')
-    
+
 def extraion_model():
     ###################################################################
     # 2- GENERATE MODEL TO CLASSIFY SINGLE CHARACTERS
     ###################################################################
-    
-    # CREATES AN INSTANCE OF THE CLASS LOADING THE OCR DATA 
+
+    # CREATES AN INSTANCE OF THE CLASS LOADING THE OCR DATA
     data = OcrData('/home/francesco/Dropbox/DSR/OCR/ocr-config.py')
-    
+
     # PERFORMS GRID SEARCH CROSS VALIDATION GETTING BEST MODEL OUT OF PASSED PARAMETERS
     data.perform_grid_search_cv('linearsvc-hog')
-    
+
     # TAKES THE PARAMETERS LINKED TO BEST MODEL AND RE-TRAINS THE MODEL ON THE WHOLE TRAIN SET
     data.generate_best_hog_model()
-    
+
     # TAKES THE JUST GENERATED MODEL AND EVALUATES IT ON TRAIN SET
-    data.evaluate('/media/francesco/Francesco/CharacterProject/linearsvc-hog-fulltrain36-90.pickle')    
+    data.evaluate('/media/francesco/Francesco/CharacterProject/linearsvc-hog-fulltrain36-90.pickle')
 
 
 def test_model():
     ##### the following code includes all the steps to get from a raw image to a prediction.
-    ##### the working code is the uncommented one. 
+    ##### the working code is the uncommented one.
     ##### the two pickle models which are passed as argument to the select_text_among_candidates
     ##### and classify_text methods are obviously the result of a previously implemented pipeline.
-    ##### just for the purpose of clearness below the code is provided. 
+    ##### just for the purpose of clearness below the code is provided.
     ##### I want to emphasize that the commented code is the one necessary to get the models trained.
-    
-    # creates instance of class and loads image    
+
+    # creates instance of class and loads image
     user = UserData('lao.jpg')
-    # plots preprocessed imae 
+    # plots preprocessed imae
     user.plot_preprocessed_image()
     # detects objects in preprocessed image
     candidates = user.get_text_candidates()
@@ -71,17 +81,25 @@ def test_model():
     user.plot_to_check(maybe_text, 'Objects Containing Text Detected')
     # classifies single characters
     classified = user.classify_text('/media/francesco/Francesco/CharacterProject/linearsvc-hog-fulltrain36-90.pickle')
-    # plots letters after classification 
+    # plots letters after classification
     user.plot_to_check(classified, 'Single Character Recognition')
     # plots the realigned text
     user.realign_text()
-    
+
+# ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+# 2nd Trial
+
+# -----
+#
+# -----
 def main():
+    # 1st Trial
     detection_model()
     extraction_model()
-    
+
     test_model()
-   
+
+    # 2nd Trial
 
 if __name__ == '__main__':
     main()
