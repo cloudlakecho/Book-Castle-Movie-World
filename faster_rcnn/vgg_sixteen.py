@@ -3,6 +3,9 @@
 # vgg_sixteen.py
 # Cloud Cho December 6, 2018 - VGG16 model for Keras.
 #
+# Comment:
+#   Theano and Tesorflow libraries used
+#
 # Reference:
 #   Very Deep Convolutional Networks for Large-Scale Image Recognition
 #   (https://arxiv.org/abs/1409.1556)
