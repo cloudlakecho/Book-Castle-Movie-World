@@ -19,6 +19,26 @@ from data import OcrData
 from cifar import Cifar
 from userimageski import UserData
 
+from __future__ import division
+import random
+import pprint
+import sys
+import time
+import numpy as np
+from optparse import OptionParser
+import pickle
+
+from keras import backend as K
+from keras.optimizers import Adam, SGD, RMSprop
+from keras.layers import Input
+from keras.models import Model
+from keras_frcnn import config, data_generators
+from keras_frcnn import losses as losses
+import keras_frcnn.roi_helpers as roi_helpers
+from keras.utils import generic_utils
+
+from tool import vgg_sixteen
+
 # ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 # 1st Trial
 def detection_model():
@@ -88,6 +108,21 @@ def test_model():
 
 # ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 # 2nd Trial
+def train_model(dataset):
+    # (1) Prepare data and label
+    input_shape_img = (None, None, 3)
+    img_input = Input(shape=input_shape_img)
+    roi_input = Input(shape=(None, 4))
+    # define the base network
+    shared_layers = vgg_sixteen.nn_base(img_input, trainable=True)
+
+    # (2) Neural Network defining
+    # define the RPN, built on the base layers
+    anchor_box_scales = [128, 256, 512]
+    num_anchors = len(anchor_box_scales) * len(C.anchor_box_ratios)
+    anchor_box_ratios = [[1, 1], [1./math.sqrt(2), 2./math.sqrt(2)],
+                        [2./math.sqrt(2), 1./math.sqrt(2)]]
+    rpn = vgg_sixteen.rpn(shared_layers, num_anchors)
 
 # -----
 #
