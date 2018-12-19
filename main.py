@@ -10,7 +10,7 @@
 #
 # Source:
 #   1st Trial
-#   https://github.com/FraPochetti/ImageTextRecognition
+#       https://github.com/FraPochetti/ImageTextRecognition
 #   2nd Trial
 #
 # Work? - no
@@ -25,6 +25,7 @@ import pprint
 import sys
 import time
 import numpy as np
+import math
 from optparse import OptionParser
 import pickle
 
@@ -113,16 +114,32 @@ def train_model(dataset):
     input_shape_img = (None, None, 3)
     img_input = Input(shape=input_shape_img)
     roi_input = Input(shape=(None, 4))
+
+    # -----
+    # To do: get_data
+    # ----- 
+    all_imgs, classes_count, class_mapping = get_data(train_path)
+    
     # define the base network
     shared_layers = vgg_sixteen.nn_base(img_input, trainable=True)
 
     # (2) Neural Network defining
     # define the RPN, built on the base layers
     anchor_box_scales = [128, 256, 512]
-    num_anchors = len(anchor_box_scales) * len(C.anchor_box_ratios)
     anchor_box_ratios = [[1, 1], [1./math.sqrt(2), 2./math.sqrt(2)],
                         [2./math.sqrt(2), 1./math.sqrt(2)]]
+    num_rois = 32
+    num_anchors = len(anchor_box_scales) * len(anchor_box_ratios)
     rpn = vgg_sixteen.rpn(shared_layers, num_anchors)
+    classifier = vgg_sixteen.classifier(shared_layers, roi_input, num_rois, 
+                 nb_classes=len(classes_count), trainable=True)
+
+    model_rpn = Model(img_input, rpn[:2])
+    model_classifier = Model([img_input, roi_input], classifier)
+
+    # This is a model that holds both the RPN and the classifier, used to load/save weights 
+    # for the models
+    model_all = Model([img_input, roi_input], rpn[:2] + classifier)
 
 # -----
 #
