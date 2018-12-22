@@ -38,7 +38,7 @@ from keras_frcnn import losses as losses
 import keras_frcnn.roi_helpers as roi_helpers
 from keras.utils import generic_utils
 
-from tool import vgg_sixteen
+from faster_rcnn import simple_parser, vgg_sixteen
 
 # ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 # 1st Trial
@@ -115,10 +115,7 @@ def train_model(dataset):
     img_input = Input(shape=input_shape_img)
     roi_input = Input(shape=(None, 4))
 
-    # -----
-    # To do: get_data
-    # ----- 
-    all_imgs, classes_count, class_mapping = get_data(train_path)
+    all_imgs, classes_count, class_mapping = simple_parser.get_data(train_path)
     
     # define the base network
     shared_layers = vgg_sixteen.nn_base(img_input, trainable=True)
