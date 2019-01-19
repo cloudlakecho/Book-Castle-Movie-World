@@ -8,6 +8,12 @@
 # (1) Book segmentation
 # (2) Title collection
 #
+# To do:
+#
+# Error:
+#   OpenCV version collision at faster_rcnn/simple_parser.py (essential)
+#   RoiPoolingConv function should be added in faster_rcnn
+#
 # Source:
 #   1st Trial
 #       https://github.com/FraPochetti/ImageTextRecognition
@@ -15,11 +21,11 @@
 #
 # Work? - no
 
-from data import OcrData
-from cifar import Cifar
-from userimageski import UserData
-
 from __future__ import division
+# from data import OcrData
+# from cifar import Cifar
+# from userimageski import UserData
+
 import random
 import pprint
 import sys
@@ -33,12 +39,13 @@ from keras import backend as K
 from keras.optimizers import Adam, SGD, RMSprop
 from keras.layers import Input
 from keras.models import Model
-from keras_frcnn import config, data_generators
-from keras_frcnn import losses as losses
-import keras_frcnn.roi_helpers as roi_helpers
+# from faster_rcnn import config, data_generators
+# from faster_rcnn import losses as losses
+# import faster_rcnn.roi_helpers as roi_helpers
 from keras.utils import generic_utils
 
-from faster_rcnn import simple_parser, vgg_sixteen
+# from faster_rcnn import simple_parser, vgg_sixteen
+from faster_rcnn import vgg_sixteen
 
 # ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 # 1st Trial
@@ -115,8 +122,12 @@ def train_model(dataset):
     img_input = Input(shape=input_shape_img)
     roi_input = Input(shape=(None, 4))
 
-    all_imgs, classes_count, class_mapping = simple_parser.get_data(train_path)
-    
+    # Error spot
+    # all_imgs, classes_count, class_mapping = simple_parser.get_data(train_path)
+    classes = ['human', 'car']
+    # simple_parser.py shoud be fixed
+    classes_count = {classes[0]: 10, classes[1]: 10}
+
     # define the base network
     shared_layers = vgg_sixteen.nn_base(img_input, trainable=True)
 
@@ -128,27 +139,39 @@ def train_model(dataset):
     num_rois = 32
     num_anchors = len(anchor_box_scales) * len(anchor_box_ratios)
     rpn = vgg_sixteen.rpn(shared_layers, num_anchors)
-    classifier = vgg_sixteen.classifier(shared_layers, roi_input, num_rois, 
+    classifier = vgg_sixteen.classifier(shared_layers, roi_input, num_rois,
                  nb_classes=len(classes_count), trainable=True)
 
     model_rpn = Model(img_input, rpn[:2])
     model_classifier = Model([img_input, roi_input], classifier)
 
-    # This is a model that holds both the RPN and the classifier, used to load/save weights 
-    # for the models
+    # This is a model that holds both the RPN and the classifier, used
+    # to load/save weights for the models
     model_all = Model([img_input, roi_input], rpn[:2] + classifier)
+    print(type(model_all))
+    # print('Training completed')
 
 # -----
 #
 # -----
 def main():
-    # 1st Trial
-    detection_model()
-    extraction_model()
-
-    test_model()
+    # # 1st Trial
+    # detection_model()
+    # extraction_model()
+    #
+    # test_model()
 
     # 2nd Trial
+    width = 12
+    height = 12
+    depth = 3
+    dataset_size = 10
+    data = np.random.randint(0, 2, (width, height, depth))
+    label =  np.random.randint(0, 10, (dataset_size))
+    print(data.shape, label.shape)
+    dataset = [data, label]
+    print(type(dataset))
+    train_model(dataset)
 
 if __name__ == '__main__':
     main()

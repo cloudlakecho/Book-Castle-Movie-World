@@ -6,6 +6,9 @@
 # Comment:
 #   Theano and Tesorflow libraries used
 #
+# Error
+#   ROI pooling conversion function should be added in faster_rcnn.py code
+#
 # Reference:
 #   Very Deep Convolutional Networks for Large-Scale Image Recognition
 #   (https://arxiv.org/abs/1409.1556)
@@ -25,7 +28,8 @@ from keras.engine.topology import get_source_inputs
 from keras.utils import layer_utils
 from keras.utils.data_utils import get_file
 from keras import backend as K
-from keras_frcnn.RoiPoolingConv import RoiPoolingConv
+# from keras_frcnn.RoiPoolingConv import RoiPoolingConv
+from faster_rcnn.RoiPoolingConv import RoiPoolingConv
 
 
 def get_weight_path():
@@ -113,14 +117,17 @@ def classifier(base_layers, input_rois, num_rois, nb_classes = 21, trainable=Fal
     # smaller ROI pooling regions to workaround
     if K.backend() == 'tensorflow':
         pooling_regions = 7
-        input_shape = (num_rois,7,7,512)
+        input_shape = (num_rois, 7, 7, 512)
     elif K.backend() == 'theano':
         pooling_regions = 7
-        input_shape = (num_rois,512,7,7)
+        input_shape = (num_rois, 512, 7, 7)
 
     out_roi_pool = RoiPoolingConv(pooling_regions, num_rois)([base_layers, input_rois])
 
+    # Error spot
+    # RoiPoolingConv function should be added in faster_rcnn file
     out = TimeDistributed(Flatten(name='flatten'))(out_roi_pool)
+
     out = TimeDistributed(Dense(4096, activation='relu', name='fc1'))(out)
     out = TimeDistributed(Dropout(0.5))(out)
     out = TimeDistributed(Dense(4096, activation='relu', name='fc2'))(out)

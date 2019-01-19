@@ -10,6 +10,8 @@
 # 	This file will be called from main.py
 # 	Image file name example: "filename x1 y1 x2 y2 class_name.jpg"
 #
+# Error: OpenCV importing error, Python version collision
+#
 # Source:
 # 	Very Deep Convolutional Networks for Large-Scale Image Recognition
 #   	Paper: https://arxiv.org/abs/1409.1556
@@ -17,7 +19,9 @@
 #
 # Work? - no
 
+# Error
 import cv2
+
 import numpy as np
 
 
@@ -64,9 +68,8 @@ def get_data(input_path):
 				else:
 					all_imgs[filename]['imageset'] = 'test'
 
-			all_imgs[filename]['bboxes'].
-				append({'class': class_name, 'x1': int(x1), 'x2': int(x2),
-						'y1': int(y1), 'y2': int(y2)})
+			all_imgs[filename]['bboxes'].append({'class': class_name, 'x1': int(x1), 'x2': int(x2),
+						                       'y1': int(y1), 'y2': int(y2)})
 
 		all_data = []
 		for key in all_imgs:
