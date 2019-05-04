@@ -26,6 +26,7 @@ from __future__ import division
 # from cifar import Cifar
 # from userimageski import UserData
 
+import ipdb
 import random
 import pprint
 import sys
@@ -118,9 +119,10 @@ def test_model():
 # 2nd Trial
 def train_model(dataset):
     # (1) Prepare data and label
-    input_shape_img = (None, None, 3)
+    input_shape_img = (None, None, 3)  # width, height, depth
+    roi_shape = (2, 2)  # top left, bottom right coordinate
     img_input = Input(shape=input_shape_img)
-    roi_input = Input(shape=(None, 4))
+    roi_input = Input(shape=roi_shape)
 
     # Error spot
     # all_imgs, classes_count, class_mapping = simple_parser.get_data(train_path)
@@ -145,11 +147,19 @@ def train_model(dataset):
     model_rpn = Model(img_input, rpn[:2])
     model_classifier = Model([img_input, roi_input], classifier)
 
+
     # This is a model that holds both the RPN and the classifier, used
     # to load/save weights for the models
     model_all = Model([img_input, roi_input], rpn[:2] + classifier)
     print(type(model_all))
-    # print('Training completed')
+
+    try:
+        model_all([dataset[0], roi])
+    except Exception as e:
+        print (e.message)
+        ipdb.set_trace()
+    else:
+        print ('Training completed')
 
 # -----
 #
@@ -166,12 +176,16 @@ def main():
     height = 12
     depth = 3
     dataset_size = 10
+    roi_shape = (2, 2)
     data = np.random.randint(0, 2, (width, height, depth))
-    label =  np.random.randint(0, 10, (dataset_size))
+    label =  np.random.randint(0, dataset_size, (dataset_size))
+    roi = np.random.randint(0, np.max(width, height), roi_shape)
+
     print(data.shape, label.shape)
+
     dataset = [data, label]
     print(type(dataset))
-    train_model(dataset)
+    train_model(dataset, roi)
 
 if __name__ == '__main__':
     main()
