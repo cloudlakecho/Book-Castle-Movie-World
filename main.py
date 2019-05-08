@@ -117,7 +117,7 @@ def test_model():
 
 # ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 # 2nd Trial
-def train_model(dataset):
+def train_model(dataset, roi):
     # (1) Prepare data and label
     input_shape_img = (None, None, 3)  # width, height, depth
     roi_shape = (2, 2)  # top left, bottom right coordinate
@@ -141,6 +141,7 @@ def train_model(dataset):
     num_rois = 32
     num_anchors = len(anchor_box_scales) * len(anchor_box_ratios)
     rpn = vgg_sixteen.rpn(shared_layers, num_anchors)
+    ipdb.set_trace()
     classifier = vgg_sixteen.classifier(shared_layers, roi_input, num_rois,
                  nb_classes=len(classes_count), trainable=True)
 
@@ -179,7 +180,8 @@ def main():
     roi_shape = (2, 2)
     data = np.random.randint(0, 2, (width, height, depth))
     label =  np.random.randint(0, dataset_size, (dataset_size))
-    roi = np.random.randint(0, np.max(width, height), roi_shape)
+    # ipdb.set_trace()
+    roi = np.random.randint(0, np.maximum(width, height), roi_shape)
 
     print(data.shape, label.shape)
 
