@@ -19,6 +19,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 
+import ipdb
 import warnings
 
 from keras.models import Model
@@ -121,6 +122,8 @@ def classifier(base_layers, input_rois, num_rois, nb_classes = 21, trainable=Fal
     elif K.backend() == 'theano':
         pooling_regions = 7
         input_shape = (num_rois, 512, 7, 7)
+
+    ipdb.set_trace()
 
     out_roi_pool = RoiPoolingConv(pooling_regions, num_rois)([base_layers, input_rois])
 

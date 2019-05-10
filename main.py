@@ -13,6 +13,7 @@
 # Error:
 #   OpenCV version collision at faster_rcnn/simple_parser.py (essential)
 #   RoiPoolingConv function should be added in faster_rcnn
+#   RoiPoolingConv input variable 
 #
 # Source:
 #   1st Trial
@@ -141,7 +142,9 @@ def train_model(dataset, roi):
     num_rois = 32
     num_anchors = len(anchor_box_scales) * len(anchor_box_ratios)
     rpn = vgg_sixteen.rpn(shared_layers, num_anchors)
-    ipdb.set_trace()
+
+    # ipdb.set_trace()
+
     classifier = vgg_sixteen.classifier(shared_layers, roi_input, num_rois,
                  nb_classes=len(classes_count), trainable=True)
 
