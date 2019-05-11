@@ -13,7 +13,7 @@
 # Error:
 #   OpenCV version collision at faster_rcnn/simple_parser.py (essential)
 #   RoiPoolingConv function should be added in faster_rcnn
-#   RoiPoolingConv input variable 
+#   RoiPoolingConv input variable cd
 #
 # Source:
 #   1st Trial
