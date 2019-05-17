@@ -124,7 +124,7 @@ def classifier(base_layers, input_rois, num_rois, nb_classes = 21, trainable=Fal
         pooling_regions = 7
         input_shape = (num_rois, 512, 7, 7)
 
-    ipdb.set_trace()
+    # ipdb.set_trace(context=10)
 
     out_roi_pool = RoiPoolingConv(pooling_regions, num_rois)([base_layers, input_rois])
 

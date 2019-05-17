@@ -121,7 +121,8 @@ def test_model():
 def train_model(dataset, roi):
     # (1) Prepare data and label
     input_shape_img = (None, None, 3)  # width, height, depth
-    roi_shape = (2, 2)  # top left, bottom right coordinate
+    # number of roi, top left, bottom right coordinate
+    roi_shape = (None, 4)
     img_input = Input(shape=input_shape_img)
     roi_input = Input(shape=roi_shape)
 
@@ -152,16 +153,20 @@ def train_model(dataset, roi):
     model_classifier = Model([img_input, roi_input], classifier)
 
 
-    # This is a model that holds both the RPN and the classifier, used
-    # to load/save weights for the models
-    model_all = Model([img_input, roi_input], rpn[:2] + classifier)
-    print(type(model_all))
 
+
+    # Error:
+    # "Layer model_3 was called with an input that isn't a symbolic tensor.
+    # Received type: <class 'numpy.ndarray'>.
+    #
     try:
-        model_all([dataset[0], roi])
+        # This is a model that holds both the RPN and the classifier, used
+        # to load/save weights for the models
+        # dataset: image, labels
+        model_all = Model([img_input, roi_input], rpn[:2] + classifier)([dataset[0], roi])
     except Exception as e:
-        print (e.message)
-        ipdb.set_trace()
+        print (e.args)
+        ipdb.set_trace(context=10)
     else:
         print ('Training completed')
 
@@ -180,7 +185,7 @@ def main():
     height = 12
     depth = 3
     dataset_size = 10
-    roi_shape = (2, 2)
+    roi_shape = (1, 4)
     data = np.random.randint(0, 2, (width, height, depth))
     label =  np.random.randint(0, dataset_size, (dataset_size))
     # ipdb.set_trace()
