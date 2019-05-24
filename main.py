@@ -158,12 +158,12 @@ def train_model(dataset, roi):
     # Error:
     # "Layer model_3 was called with an input that isn't a symbolic tensor.
     # Received type: <class 'numpy.ndarray'>.
-    #
+    # roi
     try:
         # This is a model that holds both the RPN and the classifier, used
         # to load/save weights for the models
         # dataset: image, labels
-        model_all = Model([img_input, roi_input], rpn[:2] + classifier)([dataset[0], roi])
+        model_all = Model( [img_input, roi_input], rpn[:2] + classifier )( [dataset[0], roi] )
     except Exception as e:
         print (e.args)
         ipdb.set_trace(context=10)
