@@ -14,6 +14,7 @@
 #   OpenCV version collision at faster_rcnn/simple_parser.py (essential)
 #   RoiPoolingConv function should be added in faster_rcnn
 #   RoiPoolingConv input variable cd
+#   dataset[0] isn't a tensor
 #
 # Source:
 #   1st Trial
@@ -47,7 +48,9 @@ from keras.models import Model
 from keras.utils import generic_utils
 
 # from faster_rcnn import simple_parser, vgg_sixteen
+import faster_rcnn
 from faster_rcnn import vgg_sixteen
+
 
 # ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 # 1st Trial
@@ -70,6 +73,7 @@ def detection_model():
 
     # TAKES THE JUST GENERATED MODEL AND EVALUATES IT ON TRAIN SET
     data.evaluate('/media/francesco/Francesco/CharacterProject/linearsvc-hog-fulltrain2-90.pickle')
+
 
 def extraion_model():
     ###################################################################
@@ -126,7 +130,6 @@ def train_model(dataset, roi):
     img_input = Input(shape=input_shape_img)
     roi_input = Input(shape=roi_shape)
 
-    # Error spot
     # all_imgs, classes_count, class_mapping = simple_parser.get_data(train_path)
     classes = ['human', 'car']
     # simple_parser.py shoud be fixed
@@ -152,27 +155,25 @@ def train_model(dataset, roi):
     model_rpn = Model(img_input, rpn[:2])
     model_classifier = Model([img_input, roi_input], classifier)
 
-
-
-
-    # Error:
-    # "Layer model_3 was called with an input that isn't a symbolic tensor.
-    # Received type: <class 'numpy.ndarray'>.
-    # roi
     try:
         # This is a model that holds both the RPN and the classifier, used
         # to load/save weights for the models
-        # dataset: image, labels
-        model_all = Model( [img_input, roi_input], rpn[:2] + classifier )( [dataset[0], roi] )
+        model_all = Model( [img_input, roi_input], rpn[:2] + classifier )
     except Exception as e:
         print (e.args)
         ipdb.set_trace(context=10)
     else:
-        print ('Training completed')
+        print ('Neural network initialized')
+        entire_model = [rpn, classifier, model_rpn, model_classifier, model_all]
+        #
+        # Error: AttributeError: module 'faster_rcnn' has no attribute 'seasoning'
+        #
+        faster_rcnn.seasoning.start(entire_model)
 
-# -----
+
+# ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 #
-# -----
+# ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 def main():
     # # 1st Trial
     # detection_model()
