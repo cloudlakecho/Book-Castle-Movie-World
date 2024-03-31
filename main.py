@@ -6,7 +6,11 @@
 #
 # Step
 # (1) Book segmentation
+#    SAM (Segment Anything Model)?
 # (2) Title collection
+#    OCR (Optical Character Recognition)
+#      It looks like Tensorflow Hub having weight
+#        https://unogeeks.com/tensorflow-ocr/
 #
 # To do:
 #
