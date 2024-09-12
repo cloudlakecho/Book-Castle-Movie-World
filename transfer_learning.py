@@ -5,9 +5,9 @@
 #
 # To do
 #     Test code
-# 
+#
 # Reference
-#     Code: https://www.tensorflow.org/tutorials/images/transfer_learning#use_data_augmentation
+#     Code: https://www.tensorflow.org/tutorials/images/transfer_learninguse_data_augmentation
 
 #@title Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -114,6 +114,12 @@ preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
 rescale = tf.keras.layers.Rescaling(1./127.5, offset=-1)
 
 # Create the base model from the pre-trained model MobileNet V2
+"""
+First, instantiate a MobileNet V2 model pre-loaded with weights trained on
+ImageNet. By specifying the include_top=False argument,
+you load a network that doesn't include the classification layers at
+the top, which is ideal for feature extraction.
+"""
 IMG_SHAPE = IMG_SIZE + (3,)
 base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
                                                include_top=False,
@@ -123,7 +129,42 @@ image_batch, label_batch = next(iter(train_dataset))
 feature_batch = base_model(image_batch)
 print(feature_batch.shape)
 
+# Feature extraction
+"""
+Feature extraction
+
+In this step, you will freeze the convolutional base created from
+the previous step and to use as a feature extractor.
+Additionally, you add a classifier on top of it and train the top-level classifier.
+Freeze the convolutional base
+
+It is important to freeze the convolutional base before
+you compile and train the model. Freezing (by setting layer.trainable = False)
+prevents the weights in a given layer from being updated during training.
+MobileNet V2 has many layers, so setting the entire model's trainable flag to
+False will freeze all of them.
+"""
+
 base_model.trainable = False
+
+"""
+Important note about BatchNormalization layers
+
+Many models contain tf.keras.layers.BatchNormalization layers.
+This layer is a special case and precautions should be taken
+in the context of fine-tuning, as shown later in this tutorial.
+
+When you set layer.trainable = False, the BatchNormalization layer will
+run in inference mode, and will not update its mean and variance statistics.
+
+When you unfreeze a model that contains BatchNormalization layers in order to
+do fine-tuning, you should keep the BatchNormalization layers in
+inference mode by passing training = False when calling the base model.
+Otherwise, the updates applied to the non-trainable weights will destroy
+what the model has learned.
+
+For more details, see the Transfer learning guide.
+"""
 
 # Let's take a look at the base model architecture
 base_model.summary()
@@ -132,6 +173,12 @@ global_average_layer = tf.keras.layers.GlobalAveragePooling2D()
 feature_batch_average = global_average_layer(feature_batch)
 print(feature_batch_average.shape)
 
+"""
+Apply a tf.keras.layers.Dense layer to convert these features into
+a single prediction per image. You don't need an activation function here
+because this prediction will be treated as a logit, or a raw prediction value.
+Positive numbers predict class 1, negative numbers predict class 0.
+"""
 prediction_layer = tf.keras.layers.Dense(1)
 prediction_batch = prediction_layer(feature_batch_average)
 print(prediction_batch.shape)
@@ -139,10 +186,13 @@ print(prediction_batch.shape)
 inputs = tf.keras.Input(shape=(160, 160, 3))
 x = data_augmentation(inputs)
 x = preprocess_input(x)
+# Keep previous learning: feature extraction
 x = base_model(x, training=False)
+# Transfer learning
 x = global_average_layer(x)
 x = tf.keras.layers.Dropout(0.2)(x)
 outputs = prediction_layer(x)
+# Keras version?
 model = tf.keras.Model(inputs, outputs)
 
 model.summary()
@@ -192,12 +242,46 @@ plt.title('Training and Validation Loss')
 plt.xlabel('epoch')
 plt.show()
 
+"""
+Fine tuning
+In the feature extraction experiment, you were only training a few layers on
+top of an MobileNetV2 base model. The weights of the pre-trained network were
+not updated during training.
+
+One way to increase performance even further is to train (or "fine-tune")
+the weights of the top layers of the pre-trained model alongside
+the training of the classifier you added. The training process will force
+the weights to be tuned from generic feature maps to features associated
+specifically with the dataset.
+
+Note: This should only be attempted after you have trained
+the top-level classifier with the pre-trained model set to non-trainable.
+If you add a randomly initialized classifier on top of a pre-trained model and
+attempt to train all layers jointly, the magnitude of the gradient updates will
+be too large (due to the random weights from the classifier) and
+your pre-trained model will forget what it has learned.
+
+Also, you should try to fine-tune a small number of top layers rather than
+the whole MobileNet model. In most convolutional networks,
+the higher up a layer is, the more specialized it is.
+The first few layers learn very simple and generic features that generalize to
+almost all types of images. As you go higher up, the features are increasingly
+more specific to the dataset on which the model was trained.
+The goal of fine-tuning is to adapt these specialized features to
+work with the new dataset, rather than overwrite the generic learning.
+"""
 base_model.trainable = True
 
 # Let's take a look to see how many layers are in the base model
 print("Number of layers in the base model: ", len(base_model.layers))
 
 # Fine-tune from this layer onwards
+"""
+Un-freeze the top layers of the model
+All you need to do is unfreeze the base_model and set the bottom layers to be
+un-trainable. Then, you should recompile the model (necessary for
+these changes to take effect), and resume training.
+"""
 fine_tune_at = 100
 
 # Freeze all the layers before the `fine_tune_at` layer
@@ -220,6 +304,10 @@ history_fine = model.fit(train_dataset,
                          initial_epoch=history.epoch[-1],
                          validation_data=validation_dataset)
 
+"""
+You may also get some overfitting as the new training set is relatively small
+and similar to the original MobileNetV2 datasets
+"""
 acc += history_fine.history['accuracy']
 val_acc += history_fine.history['val_accuracy']
 

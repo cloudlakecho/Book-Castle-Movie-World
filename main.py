@@ -5,7 +5,8 @@
 # May 6, 2018 ~
 #
 # Step
-# (1) Book segmentation
+# It becomes like counting number of books in the image using OCR
+# (1) Book segmentation - may not need if I could group words in each book
 #    SAM (Segment Anything Model)?
 # (2) Title collection
 #    OCR (Optical Character Recognition)
